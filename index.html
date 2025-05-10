@@ -151,7 +151,20 @@
   <div class="fan-container"></div>
 
   <script>
+// ← ここから！
 
+  // 💡画像のファイル名をつける魔法！
+  let counter = 1;
+
+  function getUniqueFileName() {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const number = String(counter).padStart(3, '0');
+    counter += 1;
+    return `Myうちわ_${y}${m}${d}_${number}.png`;
+  }
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     const canvas = document.getElementById('canvas');
