@@ -151,6 +151,7 @@
   <div class="fan-container"></div>
 
   <script>
+
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     const canvas = document.getElementById('canvas');
@@ -235,7 +236,7 @@
         canvas.toBlob(blob => {
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = `MyUchiwa_${Date.now()}.png`;
+          a.download = getUniqueFileName(); // ←さっき作った関数を呼ぶ！
           a.click();
           notice.style.display = 'block';
           notice.innerHTML = `📸 画像が保存されました！<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
