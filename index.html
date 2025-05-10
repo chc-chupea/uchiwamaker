@@ -150,21 +150,26 @@
 
   <div class="fan-container"></div>
 
-  <script>
-// ← ここから！
+    <script>
+    // 💡画像のファイル名をつける魔法！
+    function getTimestampBasedFileName() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      const h = String(today.getHours()).padStart(2, '0');
+      const min = String(today.getMinutes()).padStart(2, '0');
+      
+      // 30分ごとに箱を分ける
+      const minuteSlot = Math.floor(parseInt(min) / 30) * 30;  // 0 or 30分
+      const formattedMinuteSlot = String(minuteSlot).padStart(2, '0'); 
 
-  // 💡画像のファイル名をつける魔法！
-  let counter = 1;
+      // 3桁のランダムな番号（100〜999）
+      const randomNumber = Math.floor(Math.random() * 900) + 100;  // 100〜999の範囲
 
-  function getUniqueFileName() {
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, '0');
-    const d = String(today.getDate()).padStart(2, '0');
-    const number = String(counter).padStart(3, '0');
-    counter += 1;
-    return `uchiwa_${y}${m}${d}_${number}.png`;
-  }
+      // ファイル名を生成
+      return `Myうちわ_${y}${m}${d}_${h}${formattedMinuteSlot}_${randomNumber}.png`;
+    }
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     const canvas = document.getElementById('canvas');
