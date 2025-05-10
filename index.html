@@ -249,7 +249,7 @@
         canvas.toBlob(blob => {
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = getUniqueFileName(); // ←さっき作った関数を呼ぶ！
+          a.download = getTimestampBasedFileName(); // タイムスタンプ+30分単位+ランダム3桁でファイル名を生成
           a.click();
           notice.style.display = 'block';
           notice.innerHTML = `📸 画像が保存されました！（ファイル名が受取番号になります）<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
