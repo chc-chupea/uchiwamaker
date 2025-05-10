@@ -257,6 +257,7 @@
           a.download = getTimestampBasedFileName(); // タイムスタンプ+30分単位+ランダム3桁でファイル名を生成
           a.click();
           notice.style.display = 'block';
+          notice.style.fontSize = '12px';  // ← フォントサイズを小さく指定！
           notice.innerHTML = `📸 画像が保存されました！（ファイル名が受取番号になります）<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
           setTimeout(() => {
             const newTab = window.open(formURL, '_blank');
