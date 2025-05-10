@@ -252,7 +252,7 @@
           a.download = getUniqueFileName(); // ←さっき作った関数を呼ぶ！
           a.click();
           notice.style.display = 'block';
-          notice.innerHTML = `📸 画像が保存されました！<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
+          notice.innerHTML = `📸 画像が保存されました！（ファイル名が受取番号になります）<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
           setTimeout(() => {
             const newTab = window.open(formURL, '_blank');
             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
