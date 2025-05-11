@@ -258,13 +258,14 @@
           a.click();
           notice.style.display = 'block';
           notice.style.fontSize = '12px';  // ← フォントサイズを小さく指定！
-          notice.innerHTML = `📸 画像が保存されました！（ファイル名が受取番号になります）<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
+          notice.innerHTML = `📸 画像が保存されました！（ファイル名が受取番号になります）`;
+          
           setTimeout(() => {
-            const newTab = window.open(formURL, '_blank');
-            if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-              notice.innerHTML += `<br><a href="${formURL}" target="_blank">フォームを開く</a>`;
-            }
-          }, 1000);
+           const newTab = window.open(formURL, '_blank');
+           if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+             notice.innerHTML += `<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
+           }
+         }, 500);
         });
       };
       highresImg.src = currentHighRes;
