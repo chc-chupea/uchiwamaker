@@ -226,21 +226,21 @@
       document.title = pageTitleEl.dataset[lang];
     }
 
-   // 追加：テンプレートの選択肢も翻訳
-   const options = document.querySelectorAll('#templateSelector option');
-   options.forEach(option => {
-     if (option.dataset[lang]) {
-       option.innerHTML = option.dataset[lang];
-     }
-   });
-  }
+    // 追加：テンプレートの選択肢も翻訳
+    const options = document.querySelectorAll('#templateSelector option');
+    options.forEach(option => {
+      if (option.dataset[lang]) {
+        option.innerHTML = option.dataset[lang];
+      }
+     });
+    }
 
-   // 「📷 カメラ切り替え」ボタンのテキストも翻訳
-   const switchCameraBtn = document.getElementById('switchCameraBtn');
-   if (switchCameraBtn && switchCameraBtn.dataset[lang]) {
-     switchCameraBtn.innerHTML = switchCameraBtn.dataset[lang];
-   }
- }
+    // 「📷 カメラ切り替え」ボタンのテキストも翻訳
+    const switchCameraBtn = document.getElementById('switchCameraBtn');
+    if (switchCameraBtn && switchCameraBtn.dataset[lang]) {
+      switchCameraBtn.innerHTML = switchCameraBtn.dataset[lang];
+    }
+  }
 
 
     function startCamera() {
