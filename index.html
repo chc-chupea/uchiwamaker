@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Myうちわ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 10px;
+    }
+    #videoWrapper {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 4 / 3;
+      margin: 0 auto;
+      background-color: black;
+      overflow: hidden;
+    }
+    video, img.overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    canvas {
+      display: none;
+    }
+    #captureBtn, #switchCameraBtn, #uploadImageBtn, #resetImageBtn, #saveBtn {
+      margin-top: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    #captureBtn img {
+      width: 60px;
+      height: auto;
+    }
+    #switchCameraBtn, #uploadImageBtn, #resetImageBtn, #saveBtn {
+      font-size: 14px;
+      padding: 8px 16px;
+      background-color: #eee;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin: 5px;
+    }
+    #notice {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+    #notice a {
+      color: #0077cc;
+      text-decoration: underline;
+    }
+    #langButtons {
+      margin-top: 10px;
+    }
+    #langButtons button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #overlay {
+      position: absolute;
+      cursor: grab;
+    }
+    .fan-container {
+      display: none;
+    }
+    .fan-print {
+      display: none;
+    }
+    @media print {
+      .fan-screen {
+        display: none !important;
+      }
+      .fan-print {
+        display: block !important;
+      }
+    }
+    #previewTitle {
+      display: none;
+    }
+    #uploadedImage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="langButtons">
+    <button onclick="setLanguage('ja')">日本語</button>
+    <button onclick="setLanguage('en')">English</button>
+    <button onclick="setLanguage('zh')">中文</button>
+    <button onclick="setLanguage('ko')">한국어</button>
+    <button onclick="setLanguage('vi')">Tiếng Việt</button>
+  </div>
+
+  <h1 id="title" style="font-size: 14px;"
+      data-ja="作っちゃおう！Myうちわ"
+      data-en="Let's Make Our Own Fan!"
+      data-zh="一起来制作我们的团扇！"
+      data-ko="우리만의 부채를 만들어보자!"
+      data-vi="Hãy cùng làm quạt giấy của riêng mình!">
+    作っちゃおう！Myうちわ
+  </h1>
+
+  <label id="templateLabel" style="font-size: 14px;"
+         data-ja="🎨 うちわのデザインを選んでね："
+         data-en="🎨 Choose a fan design:"
+         data-zh="🎨 请选择一个团扇设计："
+         data-ko="🎨 부채 디자인을 선택하세요:"
+         data-vi="🎨 Chọn thiết kế quạt:">
+    🎨 うちわのデザインを選んでね：
+  </label>
+  <select id="templateSelector">
+    <option value="fan1-lowres.png" data-highres="fan1-highres.png">無地</option>
+    <option value="fan2-lowres.png" data-highres="fan2-highres.png">夏祭り</option>
+    <option value="fan3-lowres.png" data-highres="fan3-highres.png">父の日</option>
+  </select>
+
+  <div id="videoWrapper">
+    <video id="video" autoplay playsinline></video>
+    <img id="uploadedImage" src="" alt="" style="display:none;">
+    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <input type="file" id="imageInput" accept="image/*" style="display:none">
+  <button id="uploadImageBtn">📁 画像アップロード</button>
+  <button id="resetImageBtn">🔄 初期位置リセット</button>
+
+  <button id="captureBtn">
+    <img src="shutterbotann.png" alt="シャッターボタン">
+  </button>
+  <button id="switchCameraBtn">📷 カメラ切り替え</button>
+
+  <p id="notice" style="display:none;"></p>
+
+  <audio id="shutterSound" src="camera-shutter.mp3" preload="auto"></audio>
+
+  <h1 id="previewTitle">団扇プレビュー & 印刷</h1>
+  <p id="previewDescription" style="font-size: 14px;"
+     data-ja="画面では軽量、印刷は高画質が使用されます"
+     data-en="Lightweight images are shown on screen, and high-resolution images are used for printing."
+     data-zh="屏幕上显示的是轻量图像，打印时将使用高分辨率图像。"
+     data-ko="화면에는 저해상도 이미지가 표시되며, 인쇄 시에는 고해상도 이미지가 사용됩니다."
+     data-vi="Hình ảnh nhẹ được hiển thị trên màn hình, và ảnh độ phân giải cao được sử dụng khi in.">
+    画面では軽量、印刷は高画質が使用されます
+  </p>
+
+  <div class="fan-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.11/interact.min.js"></script>
+  <script>
+    const uploadedImage = document.getElementById('uploadedImage');
+    const imageInput = document.getElementById('imageInput');
+    const uploadBtn = document.getElementById('uploadImageBtn');
+    const resetBtn = document.getElementById('resetImageBtn');
+
+    uploadBtn.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedImage.src = reader.result;
+        uploadedImage.style.display = 'block';
+        resetImage();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function resetImage() {
+      uploadedImage.style.transform = 'translate(0px, 0px) scale(1) rotate(0deg)';
+      position = { x: 0, y: 0, scale: 1, angle: 0 };
+    }
+
+    resetBtn.addEventListener('click', resetImage);
+
+    let position = { x: 0, y: 0, scale: 1, angle: 0 };
+    interact(uploadedImage)
+      .draggable({
+        listeners: {
+          move (event) {
+            position.x += event.dx;
+            position.y += event.dy;
+            updateTransform();
+          }
+        }
+      })
+      .gesturable({
+        listeners: {
+          move (event) {
+            position.scale *= (1 + event.ds);
+            position.angle += event.da;
+            updateTransform();
+          }
+        }
+      });
+
+    function updateTransform() {
+      uploadedImage.style.transform = `translate(${position.x}px, ${position.y}px) scale(${position.scale}) rotate(${position.angle}deg)`;
+    }
+
+    function setLanguage(lang) {
+      document.querySelectorAll('[data-' + lang + ']').forEach(el => {
+        el.textContent = el.getAttribute('data-' + lang);
+      });
+    }
+  </script>
+
+  <footer style="font-size: 6px; color: #888;">
+  © 2025 Chugoku Shimbun Hanbai Center. Web application developed by Hitomi Sasaki. All rights reserved.<br>
+  このウェブアプリケーションは、株式会社中国新聞販売センターの従業員による地域イベント向けの自主開発プロジェクトです。<br>
+  ※本アプリは公式サービスではありませんが、業務との親和性を考慮して使用されています。
+  </footer>
+</body>
+</html>
