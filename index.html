@@ -286,12 +286,21 @@
         notice.appendChild(guide);
       }
 
-          setTimeout(() => {
-           const newTab = window.open(formURL, '_blank');
-           if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-             notice.innerHTML += `<br>Googleフォームが自動で開かない場合は <a href="${formURL}" target="_blank">こちらをクリック</a>してください。`;
-           }
-         }, 500);
+          // ↓代わりにボタンを追加
+          const manualButton = document.createElement('a');
+          manualButton.href = formURL;
+          manualButton.target = '_blank';
+          manualButton.innerText = '📝 注文フォームへ進む';
+          manualButton.style.display = 'inline-block';
+          manualButton.style.marginTop = '15px';
+          manualButton.style.padding = '10px 20px';
+          manualButton.style.backgroundColor = '#0077cc';
+          manualButton.style.color = 'white';
+          manualButton.style.textDecoration = 'none';
+          manualButton.style.borderRadius = '8px';
+          manualButton.style.fontSize = '16px';
+          notice.appendChild(manualButton);
+
         });
       };
       highresImg.src = currentHighRes;
