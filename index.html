@@ -111,6 +111,10 @@
       .fan-print {
         display: block !important;
       }
+    }
+    #downloadNotice {
+      font-size: 0.5em; /* もとの半分のサイズ */
+    }
    
   </style>
 </head>
@@ -323,19 +327,19 @@
   <script>
     const messages = {
       ja: `
-        ※「uchiwa_01.png を保存しますか？」という表示が出たら「保存」を選んでください。<br>
+        ※「uchiwa_01.png を保存しますか？」という表示が出たら<br>
         iPhoneをご利用の方は以下を参考にしてください：<br>
         ・「ファイル」アプリで管理している方 →「ダウンロード」を選択<br>
         ・「写真」アプリに保存したい方 → 「表示」を押して画像を長押し→「“写真”に追加」を選んでください。
       `,
       en: `
-        ※If prompted with “Save uchiwa_01.png?”, please select “Save”.<br>
+        ※If prompted with “Save uchiwa_01.png?”, <br>
         iPhone users, please refer to the following:<br>
         ・If using the “Files” app → Select “Downloads”<br>
         ・If you want to save to the “Photos” app → Tap “View”, then long-press the image → Select “Add to Photos”
     `  ,
       zh: `
-        ※出现“是否保存 uchiwa_01.png？”提示时，请选择“保存”。<br>
+        ※出现“是否保存 uchiwa_01.png？”提示时，<br>
         iPhone用户请参考以下说明：<br>
         ・使用“文件”应用管理 → 请选择“下载”<br>
         ・想保存到“照片” → 点击“显示”后长按图片 → 选择“添加到照片”
@@ -347,7 +351,7 @@
         ・“사진” 앱에 저장하려면 → “보기”를 누르고 이미지 길게 누름 → “사진에 추가” 선택
       `,
       vi: `
-        ※Nếu xuất hiện thông báo “Bạn có muốn lưu uchiwa_01.png?”, hãy chọn “Lưu”.<br>
+        ※Nếu xuất hiện thông báo “Bạn có muốn lưu uchiwa_01.png?”, <br>
         Người dùng iPhone vui lòng tham khảo:<br>
         ・Nếu sử dụng ứng dụng “Tệp” → Chọn “Tải xuống”<br>
         ・Nếu muốn lưu vào “Ảnh” → Nhấn “Hiển thị”, sau đó nhấn giữ ảnh → Chọn “Thêm vào Ảnh”
