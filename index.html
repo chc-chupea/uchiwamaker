@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -278,47 +279,48 @@
       highresImg.onload = () => {
         ctx.drawImage(highresImg, 0, 0, w, h);
         canvas.toBlob(blob => {
+          if (!blob) return console.error('Blob生成に失敗');
+
+          const objectURL = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = getTimestampBasedFileName(); // タイムスタンプ+30分単位+ランダム3桁でファイル名を生成
+          a.href = objectURL;
+          a.download = getTimestampBasedFileName();
           a.click();
+
           notice.style.display = 'block';
-          notice.style.fontSize = '12px';  // ← フォントサイズを小さく指定！
-          notice.innerHTML = ''; // 以前の内容を消去
-          notice.innerHTML = `📸 画像が「ファイル」に保存されました！（下に保存画像のプレビューが出ます）`;
-          
-        // ↓ プレビュー表示
-      const previewImg = document.createElement('img');
-      previewImg.src = URL.createObjectURL(blob);
-      previewImg.style.maxWidth = '90%';
-      previewImg.style.marginTop = '10px';
-      previewImg.alt = '保存画像プレビュー';
-      notice.appendChild(previewImg);
+          notice.style.fontSize = '12px';
+          notice.innerHTML = ''; // 以前の内容をクリア
 
-      // ↓ iPhone向けガイド
-      const isiPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isiPhone) {
-        const guide = document.createElement('div');
-        guide.innerHTML = '📱 プレビュー画像を<strong>長押し</strong>して「写真に追加」を選んでください。';
-        guide.style.fontSize = '12px';
-        guide.style.marginTop = '10px';
-        notice.appendChild(guide);
-      } else {
-        const guide = document.createElement('div');
-        guide.innerHTML = '💡 プレビュー画像を<strong>右クリック</strong>して保存することもできます。';
-        guide.style.fontSize = '12px';
-        guide.style.marginTop = '10px';
-        notice.appendChild(guide);
-      }
+          const previewImg = document.createElement('img');
+          previewImg.style.maxWidth = '90%';
+          previewImg.style.marginTop = '10px';
+          previewImg.alt = '保存画像プレビュー';
 
-          // ↓代わりにボタンを追加
-          const manualButton = document.createElement('a');
-          manualButton.href = formURL;
-          manualButton.target = '_blank';
-          manualButton.innerText = '📝 注文フォームへ進む';
-          manualButton.className = 'form-button';
-          notice.appendChild(manualButton);
+          // FileReaderでbase64表示（Safari対策）
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            previewImg.src = reader.result;
+            notice.appendChild(previewImg);
 
+            // ガイド
+            const isiPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const guide = document.createElement('div');
+            guide.innerHTML = isiPhone ?
+              '📱 プレビュー画像を<strong>長押し</strong>して「写真に追加」を選んでください。' :
+              '💡 プレビュー画像を<strong>右クリック</strong>して保存することもできます。';
+            guide.style.fontSize = '12px';
+            guide.style.marginTop = '10px';
+            notice.appendChild(guide);
+
+            // フォームボタン
+            const manualButton = document.createElement('a');
+            manualButton.href = formURL;
+            manualButton.target = '_blank';
+            manualButton.innerText = '📝 注文フォームへ進む';
+            manualButton.className = 'form-button';
+            notice.appendChild(manualButton);
+          };
+          reader.readAsDataURL(blob);
         });
       };
       highresImg.src = currentHighRes;
