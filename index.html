@@ -1,11 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Myうちわ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: sans-serif;
@@ -213,13 +212,6 @@
     let currentFacingMode = 'user';
     let currentStream = null;
 
-    // ✅ この下あたりに入れると整理しやすい！
-    function canvasToBlobAsync(canvas, type = "image/png") {
-      return new Promise(resolve => {
-        canvas.toBlob(blob => resolve(blob), type);
-      });
-    }
-
     function setLanguage(lang) {
       document.querySelectorAll('[data-ja]').forEach(el => {
         if (el.dataset[lang]) {
@@ -259,16 +251,13 @@
       overlay.src = currentLowRes + '?t=' + Date.now();
     });
 
-    captureBtn.addEventListener('click', async () => {
+    captureBtn.addEventListener('click', () => {
       shutterSound.currentTime = 0;
       shutterSound.play().catch(() => {});
-
       const w = 3508, h = 2480;
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
 
-      // カメラ画像描画
       const vw = video.videoWidth || video.offsetWidth;
       const vh = video.videoHeight || video.offsetHeight;
       const aspectVideo = vw / vh;
@@ -285,72 +274,58 @@
 
       ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
 
-      // テンプレート画像の読み込み・合成
       const highresImg = new Image();
       highresImg.crossOrigin = "anonymous";
-      await new Promise(resolve => {
-        highresImg.onload = () => resolve();
-        highresImg.src = currentHighRes + "?t=" + Date.now(); // キャッシュ無効化
-      });
+      highresImg.onload = () => {
+        ctx.drawImage(highresImg, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = getTimestampBasedFileName(); // タイムスタンプ+30分単位+ランダム3桁でファイル名を生成
+          a.click();
+          notice.style.display = 'block';
+          notice.style.fontSize = '12px';  // ← フォントサイズを小さく指定！
+          notice.innerHTML = ''; // 以前の内容を消去
+          notice.innerHTML = `📸 画像が「ファイル」に保存されました！（下に保存画像のプレビューが出ます）`;
+          
+        // ↓ プレビュー表示
+      const previewImg = document.createElement('img');
+      previewImg.src = URL.createObjectURL(blob);
+      previewImg.style.maxWidth = '90%';
+      previewImg.style.marginTop = '10px';
+      previewImg.alt = '保存画像プレビュー';
+      notice.appendChild(previewImg);
 
-      ctx.drawImage(highresImg, 0, 0, w, h);
-
-      // Blob取得
-      const blob = await canvasToBlobAsync(canvas);
-      if (!blob) return console.error('Blob生成に失敗');
-
-      // ダウンロード
-      const objectURL = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objectURL;
-      a.download = getTimestampBasedFileName();
-      a.click();
-
-      // プレビュー用に base64 読み取り
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        notice.style.display = 'block';
-        notice.style.fontSize = '12px';
-        notice.innerHTML = '';
-
-        const previewImg = document.createElement('img');
-        previewImg.style.maxWidth = '90%';
-        previewImg.style.marginTop = '10px';
-        previewImg.alt = '保存画像プレビュー';
-        previewImg.src = reader.result;
-        notice.appendChild(previewImg);
-
-        // ガイドメッセージ
-        const isiPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      // ↓ iPhone向けガイド
+      const isiPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isiPhone) {
         const guide = document.createElement('div');
-        guide.innerHTML = isiPhone ?
-          '📱 プレビュー画像を<strong>長押し</strong>して「写真に追加」を選んでください。' :
-          '💡 プレビュー画像を<strong>右クリック</strong>して保存することもできます。';
+        guide.innerHTML = '📱 プレビュー画像を<strong>長押し</strong>して「写真に追加」を選んでください。';
         guide.style.fontSize = '12px';
         guide.style.marginTop = '10px';
         notice.appendChild(guide);
+      } else {
+        const guide = document.createElement('div');
+        guide.innerHTML = '💡 プレビュー画像を<strong>右クリック</strong>して保存することもできます。';
+        guide.style.fontSize = '12px';
+        guide.style.marginTop = '10px';
+        notice.appendChild(guide);
+      }
 
-        // フォームリンク
-        const manualButton = document.createElement('a');
-        manualButton.href = formURL;
-        manualButton.target = '_blank';
-        manualButton.innerText = '📝 注文フォームへ進む';
-        manualButton.className = 'form-button';
-        notice.appendChild(manualButton);
+          // ↓代わりにボタンを追加
+          const manualButton = document.createElement('a');
+          manualButton.href = formURL;
+          manualButton.target = '_blank';
+          manualButton.innerText = '📝 注文フォームへ進む';
+          manualButton.className = 'form-button';
+          notice.appendChild(manualButton);
+
+        });
       };
-      reader.readAsDataURL(blob);
+      highresImg.src = currentHighRes;
     });
 
     startCamera(); // 初期起動時にカメラON
-
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const userLang = navigator.language.slice(0, 2); // 例: "ja"
-      const supportedLangs = ['ja', 'en', 'zh', 'ko', 'vi'];
-      if (supportedLangs.includes(userLang)) {
-        setLanguage(userLang);
-      }
-    });
   </script>
 
   <p style="margin-top: 30px; font-size: 14px; text-align: center;">
