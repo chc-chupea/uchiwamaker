@@ -251,6 +251,12 @@
     captureBtn.addEventListener('click', () => {
       shutterSound.currentTime = 0;
       shutterSound.play().catch(() => {});
+
+      const photoLinkInfo = document.getElementById('photoLinkInfo');
+      if (photoLinkInfo) {
+        photoLinkInfo.style.display = 'none';
+      }
+
       const w = 3508, h = 2480;
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
@@ -309,11 +315,11 @@
     });
   </script>
 
-  <p style="margin-top: 30px; font-size: 14px; text-align: center;">
-    📁 デバイスに保存されている写真をご利用の方は<br>
+  <p id="photoLinkInfo" style="margin-top: 30px; font-size: 14px; text-align: center;">
+    📁 カメラで撮らず、スマホに保存してある写真で作りたい方はこちら<br>
     <a href="https://chc-chupea.github.io/my-uchiwa-studio/" target="_blank"
        style="display: inline-block; margin-top: 10px; padding: 8px 16px; background-color: #0077cc; color: white; text-decoration: none; border-radius: 8px;">
-      ▶️ 写真から作るページへ
+       ▶️ 写真や画像から作るページへ
     </a>
   </p>
 
