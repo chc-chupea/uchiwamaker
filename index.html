@@ -1,10 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Myうちわ</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Myうちわ</title>
   <style>
     body {
       font-family: sans-serif;
@@ -326,6 +327,14 @@
     });
 
     startCamera(); // 初期起動時にカメラON
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const userLang = navigator.language.slice(0, 2); // 例: "ja"
+      const supportedLangs = ['ja', 'en', 'zh', 'ko', 'vi'];
+      if (supportedLangs.includes(userLang)) {
+        setLanguage(userLang);
+      }
+    });
   </script>
 
   <p style="margin-top: 30px; font-size: 14px; text-align: center;">
