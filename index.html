@@ -111,10 +111,7 @@
       .fan-print {
         display: block !important;
       }
-    }
-    #previewTitle {
-      display: none;
-    }
+   
   </style>
 </head>
 <body>
@@ -160,6 +157,9 @@
   </button>
 
   <button id="switchCameraBtn">📷 切替（自撮り／外向き）</button>
+
+  <!-- 保存案内をここに表示 -->
+  <p id="downloadNotice" class="text-center text-sm mt-2 text-gray-600"></p>
 
   <p id="notice" style="display:none;"></p>
 
@@ -287,32 +287,8 @@
           notice.style.display = 'block';
           notice.style.fontSize = '12px';  // ← フォントサイズを小さく指定！
           notice.innerHTML = ''; // 以前の内容を消去
-          notice.innerHTML = `📸 画像が「ファイル」に保存されました！（下に保存画像のプレビューが出ます）`;
+          notice.innerHTML = `📸 画像が保存されました！（注文フォームへ進んでください）`;
           
-        // ↓ プレビュー表示
-      const previewImg = document.createElement('img');
-      previewImg.src = URL.createObjectURL(blob);
-      previewImg.style.maxWidth = '90%';
-      previewImg.style.marginTop = '10px';
-      previewImg.alt = '保存画像プレビュー';
-      notice.appendChild(previewImg);
-
-      // ↓ iPhone向けガイド
-      const isiPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isiPhone) {
-        const guide = document.createElement('div');
-        guide.innerHTML = '📱 プレビュー画像を<strong>長押し</strong>して「写真に追加」を選んでください。';
-        guide.style.fontSize = '12px';
-        guide.style.marginTop = '10px';
-        notice.appendChild(guide);
-      } else {
-        const guide = document.createElement('div');
-        guide.innerHTML = '💡 プレビュー画像を<strong>右クリック</strong>して保存することもできます。';
-        guide.style.fontSize = '12px';
-        guide.style.marginTop = '10px';
-        notice.appendChild(guide);
-      }
-
           // ↓代わりにボタンを追加
           const manualButton = document.createElement('a');
           manualButton.href = formURL;
@@ -350,5 +326,49 @@
   このウェブアプリケーションは、株式会社中国新聞販売センターの従業員による地域イベント向けの自主開発プロジェクトです。<br>
   ※本アプリは公式サービスではありませんが、業務との親和性を考慮して使用されています。
  </footer>
+
+<!-- ページの一番下、</body>の直前に追加 -->
+  <script>
+    const messages = {
+      ja: `
+        ※「uchiwa_01.png を保存しますか？」という表示が出たら「保存」を選んでください。<br>
+        iPhoneをご利用の方は以下を参考にしてください：<br>
+        ・「ファイル」アプリで管理している方 →「ダウンロード」を選択<br>
+        ・「写真」アプリに保存したい方 → 「表示」を押して画像を長押し→「“写真”に追加」を選んでください。
+      `,
+      en: `
+        ※If prompted with “Save uchiwa_01.png?”, please select “Save”.<br>
+        iPhone users, please refer to the following:<br>
+        ・If using the “Files” app → Select “Downloads”<br>
+        ・If you want to save to the “Photos” app → Tap “View”, then long-press the image → Select “Add to Photos”
+    `  ,
+      zh: `
+        ※出现“是否保存 uchiwa_01.png？”提示时，请选择“保存”。<br>
+        iPhone用户请参考以下说明：<br>
+        ・使用“文件”应用管理 → 请选择“下载”<br>
+        ・想保存到“照片” → 点击“显示”后长按图片 → 选择“添加到照片”
+    `  ,
+      ko: `
+        ※“uchiwa_01.png을 저장하시겠습니까?”라는 메시지가 표시되면 “저장”을 선택하세요.<br>
+        iPhone 사용자는 아래 내용을 참고하세요:<br>
+        ・“파일” 앱을 사용하는 경우 → “다운로드” 선택<br>
+        ・“사진” 앱에 저장하려면 → “보기”를 누르고 이미지 길게 누름 → “사진에 추가” 선택
+      `,
+      vi: `
+        ※Nếu xuất hiện thông báo “Bạn có muốn lưu uchiwa_01.png?”, hãy chọn “Lưu”.<br>
+        Người dùng iPhone vui lòng tham khảo:<br>
+        ・Nếu sử dụng ứng dụng “Tệp” → Chọn “Tải xuống”<br>
+        ・Nếu muốn lưu vào “Ảnh” → Nhấn “Hiển thị”, sau đó nhấn giữ ảnh → Chọn “Thêm vào Ảnh”
+      `
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const lang = navigator.language.toLowerCase();
+      const baseLang = lang.split('-')[0]; // 例: "ja-JP" → "ja"
+      const notice = messages[baseLang] || messages['ja']; // デフォルトは日本語
+      document.getElementById('downloadNotice').innerHTML = notice;
+    });
+  </script>
+
 </body>
 </html>
