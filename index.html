@@ -60,7 +60,7 @@
       color: #0077cc;
       text-decoration: underline;
     }
-    
+
     .form-button {
       display: inline-block;
       background: linear-gradient(135deg, #2196f3, #1976d2);
@@ -111,10 +111,12 @@
     #downloadNotice {
       font-size: 0.7em; /* もとの半分のサイズ */
     }
-   
+
   </style>
 </head>
 <body>
+
+
   <div id="langButtons">
     <button onclick="setLanguage('ja')">日本語</button>
     <button onclick="setLanguage('en')">English</button>
@@ -142,8 +144,8 @@
   </label>
   <select id="templateSelector">
     <option value="fan1-lowres.png" data-highres="fan1-highres.png">無地</option>
-    <option value="fan2-lowres.png" data-highres="fan2-highres.png">夏祭り</option>
-    <option value="fan3-lowres.png" data-highres="fan3-highres.png">父の日</option>
+    <option value="fan2-lowres.png" data-highres="fan2-highres.png">夏祭り①</option>
+    <option value="fan3-lowres.png" data-highres="fan3-highres.png">夏祭り②</option>
   </select>
 
   <div id="videoWrapper">
@@ -160,6 +162,12 @@
 
   <!-- 保存案内をここに表示 -->
   <p id="downloadNotice" class="text-center text-sm mt-2 text-gray-600"></p>
+
+  <div id="previewWrapper" style="display:none;">
+    <img id="previewImage" style="max-width: 90%; margin-top: 20px; border: 1px solid #ccc; border-radius: 10px;">
+  </div>
+
+
   <p id="notice" style="display:none;"></p>
   <audio id="shutterSound" src="camera-shutter.mp3" preload="auto"></audio>
   <div class="fan-container"></div>
@@ -173,7 +181,7 @@
       const d = String(today.getDate()).padStart(2, '0');
       const h = String(today.getHours()).padStart(2, '0');
       const min = String(today.getMinutes()).padStart(2, '0');
-      
+
       // 30分ごとに箱を分ける
       const minuteSlot = Math.floor(parseInt(min) / 30) * 30;  // 0 or 30分
       const formattedMinuteSlot = String(minuteSlot).padStart(2, '0'); 
@@ -239,18 +247,26 @@
       overlay.src = currentLowRes + '?t=' + Date.now();
     });
 
+
     captureBtn.addEventListener('click', () => {
+
+    if (video.readyState < 2) {
+      alert('カメラがまだ準備中です。数秒待ってから、もう一度シャッターを押してください。');
+      return;
+    }
       shutterSound.currentTime = 0;
       shutterSound.play().catch(() => {});
 
-      const photoLinkInfo = document.getElementById('photoLinkInfo');
-      if (photoLinkInfo) {
-        photoLinkInfo.style.display = 'none';
-      }
-
       const w = 3508, h = 2480;
-      canvas.width = w; canvas.height = h;
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext('2d');
+
+      // 念のため video 準備が整っているか確認
+      if (video.readyState < 2) {
+        alert('カメラの準備ができていません。もう一度お試しください。');
+        return;
+      }
 
       const vw = video.videoWidth || video.offsetWidth;
       const vh = video.videoHeight || video.offsetHeight;
@@ -272,28 +288,57 @@
       highresImg.crossOrigin = "anonymous";
       highresImg.onload = () => {
         ctx.drawImage(highresImg, 0, 0, w, h);
+
         canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+
+          // ✅ プレビュー表示
+          const previewWrapper = document.getElementById('previewWrapper');
+          const previewImg = document.getElementById('previewImage');
+
+          // ① onload 登録
+          previewImg.onload = () => {
+            notice.scrollIntoView({ behavior: 'smooth' }); // 案内が見えるように下へスクロール
+          };
+
+          previewImg.src = ''; // 💡 一旦クリア（保険）
+
+          // ② src をセット（onload が発火する）
+          previewImg.src = url;
+
+
+          // ✅ 保存処理
           const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = getTimestampBasedFileName(); // タイムスタンプ+30分単位+ランダム3桁でファイル名を生成
+          a.href = url;
+          a.download = getTimestampBasedFileName();
           a.click();
+
+          // ③ 表示ブロック（src 読み込み中でも表示されるように）
+          previewWrapper.style.display = 'block';
+
+          // ✅ 案内表示
           notice.style.display = 'block';
-          notice.style.fontSize = '12px';  // ← フォントサイズを小さく指定！
-          notice.innerHTML = ''; // 以前の内容を消去
-          notice.innerHTML = `📝 注文フォームへ進んでください`;
-          
-          // ↓代わりにボタンを追加
+          notice.innerHTML = `
+            👆iPhoneの方は、画像を長押しして「“写真”に追加」を選んで保存してください。<br><br>
+            👆Androidの方は、画像を長押しして「画像を保存」で端末に保存できます。<br><br>
+            保存が終わったら、以下のボタンから申込フォームへお進みください。<br>
+          `;
+
           const manualButton = document.createElement('a');
           manualButton.href = formURL;
           manualButton.target = '_blank';
           manualButton.innerText = '📝 注文フォームへ進む';
           manualButton.className = 'form-button';
           notice.appendChild(manualButton);
-          document.getElementById('notice').scrollIntoView({ behavior: 'smooth' });
-        });
-      };
+
+          notice.scrollIntoView({ behavior: 'smooth' });
+
+        }, 'image/png');
+          };
+
       highresImg.src = currentHighRes;
     });
+
 
     startCamera(); // 初期起動時にカメラON
 
@@ -306,62 +351,11 @@
     });
   </script>
 
-  <p id="photoLinkInfo" style="margin-top: 30px; font-size: 14px; text-align: center;">
-    📁 カメラで撮らず、スマホに保存してある写真でうちわを作りたい方はこちら<br>
-    <a href="https://chc-chupea.github.io/my-uchiwa-studio/" target="_blank"
-       style="display: inline-block; margin-top: 10px; padding: 8px 16px; background-color: #0077cc; color: white; text-decoration: none; border-radius: 8px;">
-       ▶️ 写真や画像からうちわを作るページへ
-    </a>
-  </p>
 
   <footer style="font-size: 6px; color: #888;">
   © 2025 Chugoku Shimbun Hanbai Center. Web application developed by Hitomi Sasaki. All rights reserved.<br>
   このウェブアプリケーションは、株式会社中国新聞販売センターの従業員による地域イベント向けの自主開発プロジェクトです。<br>
   ※本アプリは公式サービスではありませんが、業務との親和性を考慮して使用されています。
  </footer>
-
-<!-- ページの一番下、</body>の直前に追加 -->
-  <script>
-    const messages = {
-      ja: `
-        ※「uchiwa_20250726_xxx_xxx.png を保存しますか？」という表示が出たら<br>
-        iPhoneをご利用の方は以下を参考にしてください<br>
-        ・「ファイル」アプリで管理している方 → <span style="color: red;">「ダウンロード」</span>を選択<br>
-        ・「写真」アプリに保存したい方 → 「表示」を押して画像を長押し →<span style="color: red;">「“写真”に追加」</span> を選んで保存してください。保存後は、画面左下にある 「<span style="color: blue;">＜</span>」ボタン（または「ブラウザ」のアイコン）を押すと元の画面に戻れます。
-      `,
-      en: `
-        ※If prompted with “Save uchiwa_01.png?”, <br>
-        iPhone users, please refer to the following:<br>
-        ・If using the “Files” app → Select “Downloads”<br>
-        ・If you want to save to the “Photos” app → Tap “View”, then long-press the image → Select “Add to Photos”
-    `  ,
-      zh: `
-        ※出现“是否保存 uchiwa_01.png？”提示时，<br>
-        iPhone用户请参考以下说明：<br>
-        ・使用“文件”应用管理 → 请选择“下载”<br>
-        ・想保存到“照片” → 点击“显示”后长按图片 → 选择“添加到照片”
-    `  ,
-      ko: `
-        ※“uchiwa_01.png을 저장하시겠습니까?”라는 메시지가 표시되면 “저장”을 선택하세요.<br>
-        iPhone 사용자는 아래 내용을 참고하세요:<br>
-        ・“파일” 앱을 사용하는 경우 → “다운로드” 선택<br>
-        ・“사진” 앱에 저장하려면 → “보기”를 누르고 이미지 길게 누름 → “사진에 추가” 선택
-      `,
-      vi: `
-        ※Nếu xuất hiện thông báo “Bạn có muốn lưu uchiwa_01.png?”, <br>
-        Người dùng iPhone vui lòng tham khảo:<br>
-        ・Nếu sử dụng ứng dụng “Tệp” → Chọn “Tải xuống”<br>
-        ・Nếu muốn lưu vào “Ảnh” → Nhấn “Hiển thị”, sau đó nhấn giữ ảnh → Chọn “Thêm vào Ảnh”
-      `
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const lang = navigator.language.toLowerCase();
-      const baseLang = lang.split('-')[0]; // 例: "ja-JP" → "ja"
-      const notice = messages[baseLang] || messages['ja']; // デフォルトは日本語
-      document.getElementById('downloadNotice').innerHTML = notice;
-    });
-  </script>
-
 </body>
 </html>
