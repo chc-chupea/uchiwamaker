@@ -256,16 +256,7 @@
       zoomSliderWrapper.style.display = 'none'; // ズーム非対応なら非表示
     }
 
-          // 🔍ここがズーム機能をチェックする部分！
-          const track = stream.getVideoTracks()[0];
-          const capabilities = track.getCapabilities();
-          if (capabilities.zoom) {
-            console.log("このカメラはズームできます！");
-            // ← 次のステップでここにズーム操作のコードを追加するよ
-          } else {
-            console.log("このカメラはズームできません…😢");
-          }
-
+         
         })
         .catch(err => {
           alert('カメラにアクセスできませんでした');
