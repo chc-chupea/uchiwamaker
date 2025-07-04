@@ -168,7 +168,12 @@
   </div>
 
 
-  <p id="notice" style="display:none;"></p>
+  <p id="notice">
+  保存が終わったら、下のボタンから申込フォームへお進みください。<br><br>
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdAf9ZuaIIWqMmxMPZzhmMs6zFWV_OyyI5OEUvqdCnIpnS-Xg/viewform?usp=dialog"
+     target="_blank"
+     class="form-button">📝 注文フォームへ進む</a>
+  </p>
   <audio id="shutterSound" src="camera-shutter.mp3" preload="auto"></audio>
   <div class="fan-container"></div>
 
@@ -321,15 +326,15 @@
           notice.innerHTML = `
             👆iPhoneの方は、画像を長押しして「“写真”に追加」を選んで保存してください。<br><br>
             👆Androidの方は、画像を長押しして「画像を保存」で端末に保存できます。<br><br>
-            保存が終わったら、以下のボタンから申込フォームへお進みください。<br>
+            下のボタンから申込フォームへどうぞ。<br>
           `;
 
-          const manualButton = document.createElement('a');
-          manualButton.href = formURL;
-          manualButton.target = '_blank';
-          manualButton.innerText = '📝 注文フォームへ進む';
-          manualButton.className = 'form-button';
-          notice.appendChild(manualButton);
+          // const manualButton = document.createElement('a');
+          // manualButton.href = formURL;
+          // manualButton.target = '_blank';
+          // manualButton.innerText = '📝 注文フォームへ進む';
+          // manualButton.className = 'form-button';
+          // notice.appendChild(manualButton);
 
           notice.scrollIntoView({ behavior: 'smooth' });
 
