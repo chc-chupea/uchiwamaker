@@ -323,11 +323,10 @@
 
           // ✅ 案内表示
           notice.style.display = 'block';
-          notice.innerHTML = `
+          notice.innerHTML += `
             👆iPhoneの方は、画像を長押しして「“写真”に追加」を選んで保存してください。<br><br>
             👆Androidの方は、画像を長押しして「画像を保存」で端末に保存できます。<br><br>
-            下のボタンから申込フォームへどうぞ。<br>
-          `;
+           `;
 
           // const manualButton = document.createElement('a');
           // manualButton.href = formURL;
