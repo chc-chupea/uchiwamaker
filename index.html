@@ -167,13 +167,16 @@
     <img id="previewImage" style="max-width: 90%; margin-top: 20px; border: 1px solid #ccc; border-radius: 10px;">
   </div>
 
+<!-- 保存メッセージ（あとでJavaScriptで中身を入れる） -->
+  <p id="notice" style="display: none;"></p>
 
-  <p id="notice">
-  保存が終わったら、下のボタンから申込フォームへお進みください。<br><br>
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdAf9ZuaIIWqMmxMPZzhmMs6zFWV_OyyI5OEUvqdCnIpnS-Xg/viewform?usp=dialog"
+<!-- 注文フォームのボタン（HTMLに残しておく） -->
+  <div id="formButtonWrapper" style="display: block; margin-top: 20px;">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdAf9ZuaIIWqMmxMPZzhmMs6zFWV_OyyI5OEUvqdCnIpnS-Xg/viewform?usp=dialog"
      target="_blank"
      class="form-button">📝 注文フォームへ進む</a>
-  </p>
+  </div>
+
   <audio id="shutterSound" src="camera-shutter.mp3" preload="auto"></audio>
   <div class="fan-container"></div>
 
@@ -323,7 +326,7 @@
 
           // ✅ 案内表示
           notice.style.display = 'block';
-          notice.innerHTML += `
+          notice.innerHTML = `
             👆iPhoneの方は、画像を長押しして「“写真”に追加」を選んで保存してください。<br><br>
             👆Androidの方は、画像を長押しして「画像を保存」で端末に保存できます。<br><br>
            `;
