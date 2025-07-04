@@ -203,8 +203,6 @@
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     const canvas = document.getElementById('canvas');
-    const zoomSlider = document.getElementById('zoomSlider');
-    const zoomSliderWrapper = document.getElementById('zoomSliderWrapper');
     const shutterSound = document.getElementById('shutterSound');
     const captureBtn = document.getElementById('captureBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
@@ -235,28 +233,6 @@
         .then(stream => {
           currentStream = stream;
           video.srcObject = stream;
-
-    // 📸 ズーム対応チェックと初期ズーム設定
-    const [track] = stream.getVideoTracks();
-    const capabilities = track.getCapabilities();
-
-    if (capabilities.zoom) {
-      zoomSlider.min = capabilities.zoom.min;
-      zoomSlider.max = capabilities.zoom.max;
-      zoomSlider.step = capabilities.zoom.step || 0.1;
-      zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
-      zoomSliderWrapper.style.display = 'block';
-
-      zoomSlider.oninput = () => {
-        track.applyConstraints({
-          advanced: [{ zoom: parseFloat(zoomSlider.value) }]
-        });
-      };
-    } else {
-      zoomSliderWrapper.style.display = 'none'; // ズーム非対応なら非表示
-    }
-
-         
         })
         .catch(err => {
           alert('カメラにアクセスできませんでした');
@@ -381,14 +357,8 @@
         setLanguage(userLang);
       }
     });
-
   </script>
 
-    <!-- ズームスライダー（あとでJavaScriptで動かす） -->
-    <div id="zoomSliderWrapper" style="margin-top: 10px; display: none;">
-      <label for="zoomSlider">🔍 ズーム：</label>
-      <input type="range" id="zoomSlider" min="1" max="2" step="0.1">
-    </div>
 
   <footer style="font-size: 6px; color: #888;">
   © 2025 Chugoku Shimbun Hanbai Center. Web application developed by Hitomi Sasaki. All rights reserved.<br>
