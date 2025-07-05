@@ -149,16 +149,16 @@
     <option value="fan3-lowres.png" data-highres="fan3-highres.png">夏祭り②</option>
   </select>
 
-  <div id="videoWrapper">
-    <video id="video" autoplay playsinline></video>
+  <div id="videoWrapper" style="position: relative; width: 100%; max-width: 900px; aspect-ratio: 4 / 3; margin: 0 auto; background-color: black; overflow: hidden;">
+    <video id="video" autoplay playsinline
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;">
+    </video>
 
-    <!-- ズームスライダー（あとでJavaScriptで動かす） -->
-    <div id="zoomSliderWrapper" style="margin-top: 10px; display: none;">
-      <label for="zoomSlider">🔍 ズーム：</label>
-      <input type="range" id="zoomSlider" min="1" max="2" step="0.1">
-    </div>
-    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像">
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" 
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+
+    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
   </div>
 
   <button id="captureBtn">
@@ -233,6 +233,22 @@
       });
     }
 
+    // 💡① overlay画像とvideoをcanvasに描画する関数
+    function drawVideoWithOverlay() {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(video, 0, 0, w, h);
+
+      if (overlay.complete) {
+        ctx.drawImage(overlay, 0, 0, w, h);
+      }
+
+      requestAnimationFrame(drawVideoWithOverlay);
+    }
+
     function startCamera() {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
@@ -242,6 +258,15 @@
         .then(stream => {
           currentStream = stream;
           video.srcObject = stream;
+
+          video.addEventListener('play', () => {
+            // canvasのサイズをvideoのサイズに合わせる
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // 動画＋オーバーレイ描画を開始
+            drawVideoWithOverlay();
+          });
 
     // 📸 ズーム対応チェックと初期ズーム設定
     const [track] = stream.getVideoTracks();
@@ -333,12 +358,15 @@
         sy = (vh - sh) / 2;
       }
 
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+      // ✨ ここは canvas に video + overlay が毎フレーム描かれているので、
+      // シャッターを押したときにはもう canvas が完成している状態！
+      // なので、もう ctx.drawImage() で何か描かなくていい！
 
       const highresImg = new Image();
       highresImg.crossOrigin = "anonymous";
       highresImg.onload = () => {
-        ctx.drawImage(highresImg, 0, 0, w, h);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(highresImg, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
