@@ -280,10 +280,22 @@
       const selectedOption = e.target.selectedOptions[0];
       currentLowRes = selectedOption.value;
       currentHighRes = selectedOption.dataset.highres;
+
       overlay.style.display = 'none';
       overlay.onload = null;
       overlay.onload = () => { overlay.style.display = 'block'; };
       overlay.src = currentLowRes + '?t=' + Date.now();
+      if (currentStream) {
+        const track = currentStream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities();
+        if (capabilities.zoom) {
+          zoomSlider.oninput = () => {
+            track.applyConstraints({
+              advanced: [{ zoom: parseFloat(zoomSlider.value) }]
+            });
+          };
+        }
+      }
     });
 
 
