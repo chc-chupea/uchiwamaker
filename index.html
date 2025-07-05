@@ -149,20 +149,10 @@
     <option value="fan3-lowres.png" data-highres="fan3-highres.png">夏祭り②</option>
   </select>
 
-  <div id="zoomSliderWrapper" style="display: none; margin-top: 10px;">
-    <input type="range" id="zoomSlider" style="width: 80%;">
-  </div>
-
-  <div id="videoWrapper" style="position: relative; width: 100%; max-width: 900px; aspect-ratio: 4 / 3; margin: 0 auto; background-color: black; overflow: hidden;">
-    <video id="video" autoplay playsinline
-      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;">
-    </video>
-
-    <canvas id="canvas" 
-      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
-
-    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像"
-      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+  <div id="videoWrapper">
+    <video id="video" autoplay playsinline></video>
+    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像">
+    <canvas id="canvas"></canvas>
   </div>
 
   <button id="captureBtn">
@@ -214,8 +204,6 @@
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     const canvas = document.getElementById('canvas');
-    const zoomSlider = document.getElementById('zoomSlider');
-    const zoomSliderWrapper = document.getElementById('zoomSliderWrapper');
     const shutterSound = document.getElementById('shutterSound');
     const captureBtn = document.getElementById('captureBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
@@ -237,22 +225,6 @@
       });
     }
 
-    // 💡① overlay画像とvideoをcanvasに描画する関数
-    function drawVideoWithOverlay() {
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(video, 0, 0, w, h);
-
-      if (overlay.complete) {
-        ctx.drawImage(overlay, 0, 0, w, h);
-      }
-
-      requestAnimationFrame(drawVideoWithOverlay);
-    }
-
     function startCamera() {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
@@ -262,37 +234,6 @@
         .then(stream => {
           currentStream = stream;
           video.srcObject = stream;
-
-          video.addEventListener('play', () => {
-            // canvasのサイズをvideoのサイズに合わせる
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // 動画＋オーバーレイ描画を開始
-            drawVideoWithOverlay();
-          });
-
-    // 📸 ズーム対応チェックと初期ズーム設定
-    const [track] = stream.getVideoTracks();
-    const capabilities = track.getCapabilities();
-
-    if (capabilities.zoom) {
-      zoomSlider.min = capabilities.zoom.min;
-      zoomSlider.max = capabilities.zoom.max;
-      zoomSlider.step = capabilities.zoom.step || 0.1;
-      zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
-      zoomSliderWrapper.style.display = 'block';
-
-      zoomSlider.oninput = () => {
-        track.applyConstraints({
-          advanced: [{ zoom: parseFloat(zoomSlider.value) }]
-        });
-      };
-    } else {
-      zoomSliderWrapper.style.display = 'none'; // ズーム非対応なら非表示
-    }
-
-         
         })
         .catch(err => {
           alert('カメラにアクセスできませんでした');
@@ -309,22 +250,10 @@
       const selectedOption = e.target.selectedOptions[0];
       currentLowRes = selectedOption.value;
       currentHighRes = selectedOption.dataset.highres;
-
       overlay.style.display = 'none';
       overlay.onload = null;
       overlay.onload = () => { overlay.style.display = 'block'; };
       overlay.src = currentLowRes + '?t=' + Date.now();
-      if (currentStream) {
-        const track = currentStream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities();
-        if (capabilities.zoom) {
-          zoomSlider.oninput = () => {
-            track.applyConstraints({
-              advanced: [{ zoom: parseFloat(zoomSlider.value) }]
-            });
-          };
-        }
-      }
     });
 
 
@@ -362,15 +291,12 @@
         sy = (vh - sh) / 2;
       }
 
-      // ✨ ここは canvas に video + overlay が毎フレーム描かれているので、
-      // シャッターを押したときにはもう canvas が完成している状態！
-      // なので、もう ctx.drawImage() で何か描かなくていい！
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
 
       const highresImg = new Image();
       highresImg.crossOrigin = "anonymous";
       highresImg.onload = () => {
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(highresImg, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(highresImg, 0, 0, w, h);
 
         canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
@@ -389,9 +315,6 @@
           // ② src をセット（onload が発火する）
           previewImg.src = url;
 
-          // ③ 表示ブロック（src 読み込み中でも表示されるように）
-          previewWrapper.style.display = 'block';
-
 
           // ダウンロード処理を削除 or コメントアウトして、プレビュー表示だけにする
           // const a = document.createElement('a');
@@ -399,6 +322,8 @@
           // a.download = getTimestampBasedFileName();
           // a.click();
 
+          // ③ 表示ブロック（src 読み込み中でも表示されるように）
+          previewWrapper.style.display = 'block';
 
           // ✅ 案内表示
           notice.style.display = 'block';
@@ -433,8 +358,8 @@
         setLanguage(userLang);
       }
     });
-
   </script>
+
 
   <footer style="font-size: 6px; color: #888;">
   © 2025 Chugoku Shimbun Hanbai Center. Web application developed by Hitomi Sasaki. All rights reserved.<br>
