@@ -357,6 +357,9 @@
           // ② src をセット（onload が発火する）
           previewImg.src = url;
 
+          // ③ 表示ブロック（src 読み込み中でも表示されるように）
+          previewWrapper.style.display = 'block';
+
 
           // ✅ 保存処理
           const a = document.createElement('a');
@@ -364,8 +367,6 @@
           a.download = getTimestampBasedFileName();
           a.click();
 
-          // ③ 表示ブロック（src 読み込み中でも表示されるように）
-          previewWrapper.style.display = 'block';
 
           // ✅ 案内表示
           notice.style.display = 'block';
