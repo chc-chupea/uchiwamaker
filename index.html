@@ -361,11 +361,11 @@
           previewWrapper.style.display = 'block';
 
 
-          // ✅ 保存処理
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = getTimestampBasedFileName();
-          a.click();
+          // ダウンロード処理を削除 or コメントアウトして、プレビュー表示だけにする
+          // const a = document.createElement('a');
+          // a.href = url;
+          // a.download = getTimestampBasedFileName();
+          // a.click();
 
 
           // ✅ 案内表示
