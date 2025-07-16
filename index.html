@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="mobile-web-app-capable" content="yes"> <!-- Android用 -->
-  <meta name="apple-mobile-web-app-capable" content="yes"> <!-- iOS用 -->
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Myうちわ</title>
   <style>
     body {
@@ -32,14 +32,23 @@
       height: 100%;
       object-fit: cover;
     }
+    video {
+      transform-origin: center center;
+      touch-action: none;
+    }
     canvas {
       display: none;
     }
     #captureBtn, #switchCameraBtn {
       margin-top: 15px;
+      margin-bottom: 10px;
       background: none;
       border: none;
       cursor: pointer;
+
+      display: block;           /* ← ボタンをブロック要素にするよ！ */
+      margin-left: auto;        /* ← 左の空きを自動で調整 */
+      margin-right: auto;       /* ← 右の空きも自動で調整＝まんなかに！ */
     }
     #captureBtn img {
       width: 60px;
@@ -54,14 +63,15 @@
     }
     #notice {
       margin-top: 15px;
-      color: green;
-      font-weight: bold;
+      color: black;
+      font-size: 12px; /* ←ここでサイズを指定 */
+      font-weight: normal;
     }
+
     #notice a:not(.form-button) {
       color: #0077cc;
       text-decoration: underline;
     }
-
     .form-button {
       display: inline-block;
       background: linear-gradient(135deg, #2196f3, #1976d2);
@@ -75,13 +85,11 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
     }
-
     .form-button:hover {
       background: linear-gradient(135deg, #1976d2, #0d47a1);
       transform: translateY(-2px);
       box-shadow: 0 6px 10px rgba(0,0,0,0.15);
     }
-
     #langButtons {
       margin-top: 10px;
     }
@@ -110,13 +118,56 @@
       }
     }
     #downloadNotice {
-      font-size: 0.7em; /* もとの半分のサイズ */
+      font-size: 0.7em;
     }
 
+    #templateSelector {
+      font-size: 18px;       /* 文字サイズ */
+      padding: 12px 20px;    /* 上下と左右の余白 → ボタンが大きく見える */
+      border-radius: 8px;    /* 角をちょっと丸くする */
+      border: 1px solid #888; /* 枠を少し目立たせる */
+      background-color: #fff; /* 白背景 */
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 少し立体感 */
+    }
+
+
+    #zoomSection {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #zoomSlider {
+      width: 80%;
+      height: 10px; /* ← スライダーを太く！ */
+      appearance: none;
+      background: #ddd;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    #zoomSlider::-webkit-slider-thumb {
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #2196f3;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    #zoomValue {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    /* フィルター（例）もしあればここに追記してください */
   </style>
 </head>
 <body>
-
 
   <div id="langButtons">
     <button onclick="setLanguage('ja')">日本語</button>
@@ -135,7 +186,7 @@
     作っちゃおう！Myうちわ
   </h1>
 
-  <label id="templateLabel" style="font-size: 14px;"
+  <label id="templateLabel" style="font-size: 18px;"
          data-ja="うちわのデザインを選んでね👉"
          data-en="Choose a fan design👉"
          data-zh="请选择一个团扇设计👉"
@@ -150,29 +201,32 @@
   </select>
 
   <div id="videoWrapper">
-    <video id="video" autoplay playsinline></video>
-    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像">
+    <video id="video" autoplay playsinline muted></video>
+    <img id="overlay" class="overlay" src="fan1-lowres.png" alt="うちわテンプレ画像" />
     <canvas id="canvas"></canvas>
   </div>
 
-  <button id="captureBtn">
-    <img src="shutterbotann.png" alt="シャッターボタン">
-  </button>
-
   <button id="switchCameraBtn">📷 切替（自撮り／外向き）</button>
 
-  <!-- 保存案内をここに表示 -->
+  <div id="zoomSection">
+  <label for="zoomSlider">🔍 カメラのズーム</label><br>
+  <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1" />
+  <div id="zoomValue">1.0x</div>
+  </div>
+
+  <button id="captureBtn">
+    <img src="shutterbotann.png" alt="シャッターボタン" />
+  </button>
+
   <p id="downloadNotice" class="text-center text-sm mt-2 text-gray-600"></p>
 
   <div id="previewWrapper" style="display:none;">
-    <img id="previewImage" style="max-width: 90%; margin-top: 20px; border: 1px solid #ccc; border-radius: 10px;">
+    <img id="previewImage" style="max-width: 90%; margin-top: 20px; border: 1px solid #ccc; border-radius: 10px;" />
   </div>
 
-<!-- 保存メッセージ（あとでJavaScriptで中身を入れる） -->
   <p id="notice" style="display: none;"></p>
 
-<!-- 注文フォームのボタン（HTMLに残しておく） -->
-  <div id="formButtonWrapper" style="display: block; margin-top: 12px;">
+  <div id="formButtonWrapper" style="display: block; margin-top: 10px;">
     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdAf9ZuaIIWqMmxMPZzhmMs6zFWV_OyyI5OEUvqdCnIpnS-Xg/viewform?usp=dialog"
      target="_blank"
      class="form-button">📝 注文フォームへ進む</a>
@@ -181,41 +235,57 @@
   <audio id="shutterSound" src="camera-shutter.mp3" preload="auto"></audio>
   <div class="fan-container"></div>
 
-    <script>
-    // 💡画像のファイル名をつける魔法！
-    function getTimestampBasedFileName() {
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, '0');
-      const d = String(today.getDate()).padStart(2, '0');
-      const h = String(today.getHours()).padStart(2, '0');
-      const min = String(today.getMinutes()).padStart(2, '0');
-
-      // 30分ごとに箱を分ける
-      const minuteSlot = Math.floor(parseInt(min) / 30) * 30;  // 0 or 30分
-      const formattedMinuteSlot = String(minuteSlot).padStart(2, '0'); 
-
-      // 3桁のランダムな番号（100〜999）
-      const randomNumber = Math.floor(Math.random() * 900) + 100;  // 100〜999の範囲
-
-      // ファイル名を生成
-      return `uchiwa_${y}${m}${d}_${h}${formattedMinuteSlot}_${randomNumber}.png`;
+  <script>
+    async function getCameraStream(facingMode) {
+      try {
+        const constraints = {
+          video: {
+            facingMode: { exact: facingMode }
+            
+          },
+          audio: false
+        };
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        // fallback to any available camera
+        console.warn('Fallback to default camera:', e);
+        return await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
     }
+
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
+    // ←追加ここから！
+    video.addEventListener('click', () => {
+      const track = currentStream?.getVideoTracks?.()[0];
+      if (track?.applyConstraints) {
+        track.applyConstraints({
+          advanced: [{ focusMode: "continuous" }]
+        }).catch(e => console.log("フォーカス変更できなかった：", e));
+      }
+    });
+    // ←追加ここまで！
+
     const canvas = document.getElementById('canvas');
     const shutterSound = document.getElementById('shutterSound');
     const captureBtn = document.getElementById('captureBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
     const notice = document.getElementById('notice');
     const templateSelector = document.getElementById('templateSelector');
-    const formURL = 'https://docs.google.com/forms/d/e/1FAIpQLSdAf9ZuaIIWqMmxMPZzhmMs6zFWV_OyyI5OEUvqdCnIpnS-Xg/viewform?usp=dialog';
+    const zoomSlider = document.getElementById('zoomSlider');
+    const zoomValue = document.getElementById('zoomValue');
 
     let currentLowRes = templateSelector.value;
     let currentHighRes = templateSelector.selectedOptions[0].dataset.highres;
-
     let currentFacingMode = 'user';
     let currentStream = null;
+
+    // ズームスライダーの変化で動画の表示も拡大（見た目ズーム）
+    zoomSlider.addEventListener('input', () => {
+      const scale = zoomSlider.value;
+      video.style.transform = `scale(${scale})`;
+      zoomValue.textContent = `${parseFloat(scale).toFixed(1)}x`;
+    });
 
     function setLanguage(lang) {
       document.querySelectorAll('[data-ja]').forEach(el => {
@@ -225,20 +295,18 @@
       });
     }
 
-    function startCamera() {
+    async function startCamera() {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
       }
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode } })
-        .then(stream => {
-          currentStream = stream;
-          video.srcObject = stream;
-        })
-        .catch(err => {
-          alert('カメラにアクセスできませんでした');
-          console.error(err);
-        });
+      try {
+        const stream = await getCameraStream(currentFacingMode);
+        currentStream = stream;
+        video.srcObject = stream;
+      } catch (err) {
+        alert('カメラにアクセスできませんでした。許可を確認してください。');
+        console.error(err);
+      }
     }
 
     switchCameraBtn.addEventListener('click', () => {
@@ -250,19 +318,14 @@
       const selectedOption = e.target.selectedOptions[0];
       currentLowRes = selectedOption.value;
       currentHighRes = selectedOption.dataset.highres;
-      overlay.style.display = 'none';
-      overlay.onload = null;
-      overlay.onload = () => { overlay.style.display = 'block'; };
       overlay.src = currentLowRes + '?t=' + Date.now();
     });
 
-
     captureBtn.addEventListener('click', () => {
-
-    if (video.readyState < 2) {
-      alert('カメラがまだ準備中です。数秒待ってから、もう一度シャッターを押してください。');
-      return;
-    }
+      if (video.readyState < 2) {
+        alert('カメラがまだ準備中です。数秒待ってから、もう一度シャッターを押してください。');
+        return;
+      }
       shutterSound.currentTime = 0;
       shutterSound.play().catch(() => {});
 
@@ -271,28 +334,34 @@
       canvas.height = h;
       const ctx = canvas.getContext('2d');
 
-      // 念のため video 準備が整っているか確認
-      if (video.readyState < 2) {
-        alert('カメラの準備ができていません。もう一度お試しください。');
-        return;
-      }
-
       const vw = video.videoWidth || video.offsetWidth;
       const vh = video.videoHeight || video.offsetHeight;
       const aspectVideo = vw / vh;
       const aspectCanvas = w / h;
-      let sx = 0, sy = 0, sw = vw, sh = vh;
 
+      // ズーム倍率を取得
+      const zoom = parseFloat(zoomSlider.value);
+
+      // ズームを考慮して切り出しサイズ計算
+      let sw = vw / zoom;
+      let sh = vh / zoom;
+
+      // 中央を基準に切り出し開始位置計算
+      let sx = (vw - sw) / 2;
+      let sy = (vh - sh) / 2;
+
+      // アスペクト比を合わせる調整
       if (aspectVideo > aspectCanvas) {
-        sw = vh * aspectCanvas;
+        sw = sh * aspectCanvas;
         sx = (vw - sw) / 2;
       } else {
-        sh = vw / aspectCanvas;
+        sh = sw / aspectCanvas;
         sy = (vh - sh) / 2;
       }
 
       ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
 
+      // 高解像度画像の重ね描き（テンプレート）
       const highresImg = new Image();
       highresImg.crossOrigin = "anonymous";
       highresImg.onload = () => {
@@ -300,59 +369,32 @@
 
         canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
-
-          // ✅ プレビュー表示
           const previewWrapper = document.getElementById('previewWrapper');
           const previewImg = document.getElementById('previewImage');
 
-          // ① onload 登録
           previewImg.onload = () => {
-            notice.scrollIntoView({ behavior: 'smooth' }); // 案内が見えるように下へスクロール
+            notice.scrollIntoView({ behavior: 'smooth' });
           };
 
-          previewImg.src = ''; // 💡 一旦クリア（保険）
-
-          // ② src をセット（onload が発火する）
+          previewImg.src = '';
           previewImg.src = url;
-
-
-          // ダウンロード処理を削除 or コメントアウトして、プレビュー表示だけにする
-          // const a = document.createElement('a');
-          // a.href = url;
-          // a.download = getTimestampBasedFileName();
-          // a.click();
-
-          // ③ 表示ブロック（src 読み込み中でも表示されるように）
           previewWrapper.style.display = 'block';
 
-          // ✅ 案内表示
           notice.style.display = 'block';
+          notice.style.color = 'black';
           notice.innerHTML = `
             iPhone：画像を👆長押しして「“写真”に保存」を選ぶ<br><br>
             Android：画像を👆長押しして「画像を保存」で"ギャラリー"に保存します<br><br>
-            保存が終わったら、以下のボタンから申込フォームへお進みください。<br>
-           `;
-
-          // const manualButton = document.createElement('a');
-          // manualButton.href = formURL;
-          // manualButton.target = '_blank';
-          // manualButton.innerText = '📝 注文フォームへ進む';
-          // manualButton.className = 'form-button';
-          // notice.appendChild(manualButton);
-
-          notice.scrollIntoView({ behavior: 'smooth' });
-
+            保存が終わったら、下のボタンから注文フォームへ<br>
+          `;
         }, 'image/png');
-          };
-
+      };
       highresImg.src = currentHighRes;
     });
 
-
-    startCamera(); // 初期起動時にカメラON
-
     window.addEventListener('DOMContentLoaded', () => {
-      const userLang = navigator.language.slice(0, 2); // 例: "ja"
+      startCamera();
+      const userLang = navigator.language.slice(0, 2);
       const supportedLangs = ['ja', 'en', 'zh', 'ko', 'vi'];
       if (supportedLangs.includes(userLang)) {
         setLanguage(userLang);
@@ -360,11 +402,10 @@
     });
   </script>
 
-
   <footer style="font-size: 6px; color: #888;">
-  © 2025 Chugoku Shimbun Hanbai Center. Web application developed by Hitomi Sasaki. All rights reserved.<br>
-  このウェブアプリケーションは、株式会社中国新聞販売センターの従業員による地域イベント向けの自主開発プロジェクトです。<br>
-  ※本アプリは公式サービスではありませんが、業務との親和性を考慮して使用されています。
- </footer>
+    © 2025 Chugoku Shimbun Hanbai Center. Web application developed by Hitomi Sasaki. All rights reserved.<br />
+    このウェブアプリケーションは、株式会社中国新聞販売センターの従業員による地域イベント向けの自主開発プロジェクトです。<br />
+    ※本アプリは公式サービスではありませんが、業務との親和性を考慮して使用されています。
+  </footer>
 </body>
 </html>
