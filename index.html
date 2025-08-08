@@ -236,23 +236,6 @@
   <div class="fan-container"></div>
 
   <script>
-    async function getCameraStream(facingMode) {
-      try {
-        const constraints = {
-          video: {
-            facingMode: { exact: facingMode }
-            
-          },
-          audio: false
-        };
-        return await navigator.mediaDevices.getUserMedia(constraints);
-      } catch (e) {
-        // fallback to any available camera
-        console.warn('Fallback to default camera:', e);
-        return await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      }
-    }
-
     const video = document.getElementById('video');
     const overlay = document.getElementById('overlay');
     // ←追加ここから！
@@ -294,13 +277,14 @@
         }
       });
     }
+
     async function getCameraStream(facingMode) {
-    try {
+      try {
         const constraints = {
           video: {
             facingMode: { exact: facingMode },
-            width: { ideal: 1920 }, // 推奨解像度
-            height: { ideal: 1080 },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
           },
           audio: false
         };
@@ -319,12 +303,12 @@
     }
 
     async function startCamera(facingMode = 'environment') {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop()); // 前のカメラ停止
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
       }
       try {
-        stream = await getCameraStream(facingMode); // 高解像度指定版
-        video.srcObject = stream;
+        currentStream = await getCameraStream(facingMode);
+        video.srcObject = currentStream;
       } catch (err) {
         alert('カメラにアクセスできませんでした。許可を確認してください。');
         console.error(err);
