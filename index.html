@@ -294,14 +294,36 @@
         }
       });
     }
+    async function getCameraStream(facingMode) {
+    try {
+        const constraints = {
+          video: {
+            facingMode: { exact: facingMode },
+            width: { ideal: 1920 }, // 推奨解像度
+            height: { ideal: 1080 },
+          },
+          audio: false
+        };
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        console.warn('Fallback to default camera:', e);
+        return await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        });
+      }
+    }
 
-    async function startCamera() {
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
+    async function startCamera(facingMode = 'environment') {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop()); // 前のカメラ停止
       }
       try {
-        const stream = await getCameraStream(currentFacingMode);
-        currentStream = stream;
+        stream = await getCameraStream(facingMode); // 高解像度指定版
         video.srcObject = stream;
       } catch (err) {
         alert('カメラにアクセスできませんでした。許可を確認してください。');
@@ -311,7 +333,7 @@
 
     switchCameraBtn.addEventListener('click', () => {
       currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
-      startCamera();
+      startCamera(currentFacingMode); // 引数として渡す
     });
 
     templateSelector.addEventListener('change', e => {
@@ -409,4 +431,3 @@
   </footer>
 </body>
 </html>
-
